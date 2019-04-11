@@ -16,12 +16,13 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final UUID MY_UUID = UUID.fromString("00000000-0000-1000-8000-00805f9b34fb");
+    private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     TextView pressure, humidity, intensity, temperature;
     ImageButton bluetooth;
     BluetoothAdapter mBluetoothAdapter;
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     String string;
     volatile boolean stopWorker;
     TextView heading;
+    Handler customHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,11 +89,18 @@ public class MainActivity extends AppCompatActivity {
                         mmInputStream = mSocket.getInputStream();
                       //  mmInputStream.read();
                         Toast.makeText(getApplicationContext(), "You are Connected" , Toast.LENGTH_SHORT).show();
-//                        beginListenForData();
+                        beginListenForData();
                     } catch (IOException connectException) {
                         Toast.makeText(getApplicationContext(), "You are not Connected", Toast.LENGTH_SHORT).show();
                     }
                 }
+                customHandler = new Handler();
+//                try {
+//                    Thread.sleep(2000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+                customHandler.postDelayed(updateTimerThread, 4000);
             }
         });
     }
@@ -145,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
                        // Toast.makeText(MainActivity.this, "Yep", Toast.LENGTH_SHORT).show();
 //                        mmInputStream = mSocket.getInputStream();
                         int bytesAvailable = mmInputStream.available();
+                        Log.d("TAG",String.valueOf(bytesAvailable));
                         if (bytesAvailable > 0) {
                             byte[] packetBytes = new byte[bytesAvailable];
                             mmInputStream.read(packetBytes);
@@ -176,6 +186,28 @@ public class MainActivity extends AppCompatActivity {
 
         workerThread.start();
     }
+
+    private void startGeneration(){
+        double min = 31;
+        double max = 33;
+        double temp = min + Math.random() * (max - min);
+        temperature.setText(String.valueOf(temp));
+    }
+
+    private Runnable updateTimerThread = new Runnable() {
+        public void run() {
+            double min = 31;
+            double max = 33;
+            double temp = min + Math.random() * (max - min);
+            temperature.setText(String.valueOf(temp) + "C");
+            double pressure_min = 1;
+            double pressure_max = 1.3;
+            double press = pressure_min + Math.random() * (pressure_max - pressure_min);
+            pressure.setText(String.valueOf(press)+"atm");
+            //write here whaterver you want to repeat
+            customHandler.postDelayed(this, 3000);
+        }
+    };
 
 
 }
